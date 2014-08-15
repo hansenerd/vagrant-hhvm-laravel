@@ -1,0 +1,49 @@
+- hosts: all
+  sudo: yes
+  tasks:
+    - name: refresh system
+      apt: upgrade=dist update_cache=yes
+    - name: install base dependencies
+      apt: name={{ item }} state=latest
+      with_items:
+        - python-apt
+        - unzip
+        - vim
+        - git-core
+        - curl
+        - wget
+        - build-essential
+        - python-software-properties
+    - name: add nginx signing key
+      apt_key: url=http://nginx.org/keys/nginx_signing.key state=present
+    - name: add nginx repo
+      apt_repository: repo="deb http://nginx.org/packages/debian/ wheezy nginx" state=present update_cache=yes
+    - name: install nginx
+      apt: name=nginx state=latest
+    - name: add hhvm signing key
+      apt_key: url=http://dl.hhvm.com/conf/hhvm.gpg.key state=present
+    - name: add hhvm repository
+      apt_repository: repo="deb http://dl.hhvm.com/debian wheezy main" state=present update_cache=yes
+    - name: install hhvm
+      apt: name=hhvm state=latest
+    - name: configure fastcgi
+      command: /usr/share/hhvm/install_fastcgi.sh
+    - name: start hhvm on boot
+      service: name=hhvm enabled=yes state=restarted
+    - name: use hhvm for php binary.
+      alternatives: name=php link=/usr/bin/php path=/usr/bin/hhvm
+    - name: add laravel nginx config.
+      copy: src=laravel.conf dest=/etc/nginx/conf.d/laravel.conf owner=nginx group=nginx mode=0644
+    - name: remove other websites.
+      command: rm /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/example_ssl.conf
+    - name: restart nginx
+      service: name=nginx state=restarted
+    - name: download composer
+      raw: curl -sS https://getcomposer.org/installer | php
+    - name: install composer
+      command: mv composer.phar /usr/local/bin/composer
+    - name: install laravel
+      command: composer create-project laravel/laravel laravel
+      args:
+        chdir: /vagrant
+        creates: /vagrant/laravel/server.php
