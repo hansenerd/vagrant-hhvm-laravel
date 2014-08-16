@@ -12,3 +12,5 @@ installs nginx, hhvm and laravel.
 
 Just run `vagrant up` and wait. After installation you will have a `laravel/` folder
 in the current directory, served at http://localhost:8080/.
+
+adapted from [this blog](http://fideloper.com/hhvm-nginx-laravel).
