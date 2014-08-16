@@ -1,5 +1,7 @@
 - hosts: all
   sudo: yes
+  vars:
+    - laravel_dir: /vagrant
   tasks:
     - name: refresh system
       apt: upgrade=dist update_cache=yes
@@ -33,7 +35,7 @@
     - name: use hhvm for php binary.
       alternatives: name=php link=/usr/bin/php path=/usr/bin/hhvm
     - name: add laravel nginx config.
-      copy: src=laravel.conf dest=/etc/nginx/conf.d/laravel.conf owner=nginx group=nginx mode=0644
+      template: src=laravel.conf dest=/etc/nginx/conf.d/laravel.conf owner=nginx group=nginx mode=0644
     - name: remove other websites.
       command: rm /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/example_ssl.conf
     - name: restart nginx
@@ -45,5 +47,5 @@
     - name: install laravel
       command: composer create-project laravel/laravel laravel
       args:
-        chdir: /vagrant
-        creates: /vagrant/laravel/server.php
+        chdir: "{{ laravel_dir }}"
+        creates: "{{ laravel_dir }}/laravel/server.php"
