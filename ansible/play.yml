@@ -36,8 +36,10 @@
       alternatives: name=php link=/usr/bin/php path=/usr/bin/hhvm
     - name: add laravel nginx config.
       template: src=laravel.conf dest=/etc/nginx/conf.d/laravel.conf owner=nginx group=nginx mode=0644
-    - name: remove other websites.
-      command: rm /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/example_ssl.conf
+    - name: remove default vhost.
+      file: path=/etc/nginx/conf.d/default.conf state=absent
+    - name: remove default_ssl vhost.
+      file: path=/etc/nginx/conf.d/example_ssl.conf state=absent
     - name: restart nginx
       service: name=nginx state=restarted
     - name: download composer
